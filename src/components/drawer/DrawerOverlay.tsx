@@ -26,7 +26,7 @@ export default function DrawerOverlay({
   // Opciones admin con rutas como el bottom nav
   const items: DrawerItem[] = [
     { key: 'home', label: 'Inicio', Icon: Home, href: '/' },
-    { key: 'perfil', label: 'Perfil', Icon: User, href: '/perfil?tab=public' },
+    { key: 'complejos', label: 'Complejos', Icon: User, href: '/complejos' },
     { key: 'canchas', label: 'Canchas', Icon: MapPin, href: '/canchas' },
     { key: 'reservas', label: 'Gestionar reservas', Icon: CalendarCheck2, href: '/reservas' },
     { key: 'stats', label: 'Estadísticas', Icon: BarChart3, href: '/estadisticas' },

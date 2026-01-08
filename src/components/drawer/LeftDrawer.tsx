@@ -48,21 +48,23 @@ export default function LeftDrawer({
         }}
       >
         {/* Header perfil */}
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: 16, borderBottom: '1px solid var(--border)' }}>
-          {profile.photoUri ? (
-            <img src={profile.photoUri} alt={profile.name} style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover' }} />
-          ) : (
-            <div style={{ width: 56, height: 56, borderRadius: 12, background: '#E8F2FF' }} />
-          )}
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 800, color: 'var(--sidebar-foreground)', lineHeight: '22px' }}>{profile.name}</div>
-            {profile.subtitle ? (
-              <div style={{ color: 'var(--muted)', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: widthPx - 56 - 32 }} title={profile.subtitle}>
-                {profile.subtitle}
-              </div>
-            ) : null}
+        <Link href="/perfil" onClick={onClose}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: 16, borderBottom: '1px solid var(--border)', cursor: 'pointer' }} className="hover:bg-gray-50 transition">
+            {profile.photoUri ? (
+              <img src={profile.photoUri} alt={profile.name} style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover' }} />
+            ) : (
+              <div style={{ width: 56, height: 56, borderRadius: 12, background: '#E8F2FF' }} />
+            )}
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 800, color: 'var(--sidebar-foreground)', lineHeight: '22px' }}>{profile.name}</div>
+              {profile.subtitle ? (
+                <div style={{ color: 'var(--muted)', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: widthPx - 56 - 32 }} title={profile.subtitle}>
+                  {profile.subtitle}
+                </div>
+              ) : null}
+            </div>
           </div>
-        </div>
+        </Link>
 
         {/* Items con hover/focus/active */}
         <nav className="pt-2">
