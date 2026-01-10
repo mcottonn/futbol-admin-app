@@ -1,11 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { Header } from "../../components/layout/header"
 import { BottomNav } from "../../components/layout/bottom-nav"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../../components//ui/chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 import { Badge } from "../../components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import {
   LineChart,
   Line,
@@ -23,53 +25,110 @@ import {
 import { Calendar, TrendingUp, Users, DollarSign } from "lucide-react"
 
 export default function EstadisticasPage() {
+  const [timePeriod, setTimePeriod] = useState<"week" | "month" | "year">("month")
+
+  // Data que cambia según el período seleccionado
+  const getStatsData = () => {
+    if (timePeriod === "week") {
+      return {
+        ingresos: "$2,850",
+        reservas: 32,
+        jugadores: 87,
+        nuevos: 3,
+        ocupacion: "78%",
+        trendText: "vs semana anterior",
+      }
+    } else if (timePeriod === "month") {
+      return {
+        ingresos: "$12,450",
+        reservas: 145,
+        jugadores: 87,
+        nuevos: 15,
+        ocupacion: "82%",
+        trendText: "vs mes anterior",
+      }
+    } else {
+      return {
+        ingresos: "$156,300",
+        reservas: 1842,
+        jugadores: 324,
+        nuevos: 89,
+        ocupacion: "85%",
+        trendText: "vs año anterior",
+      }
+    }
+  }
+
+  const statsData = getStatsData()
+
   const stats = [
     {
       label: "Ingresos Totales",
-      value: "$12,450",
+      value: statsData.ingresos,
       icon: <DollarSign size={24} />,
       trend: "up",
-      trendValue: "+8% vs mes anterior",
+      trendValue: `+8% ${statsData.trendText}`,
     },
     {
       label: "Reservas Completadas",
-      value: 145,
+      value: statsData.reservas,
       icon: <Calendar size={24} />,
       trend: "up",
-      trendValue: "+12 vs mes anterior",
+      trendValue: `+12 ${statsData.trendText}`,
     },
     {
       label: "Jugadores Totales",
-      value: 87,
+      value: statsData.jugadores,
       icon: <Users size={24} />,
       trend: "up",
-      trendValue: "+15 nuevos",
+      trendValue: `+${statsData.nuevos} nuevos`,
     },
     {
       label: "Jugadores Nuevos",
-      value: 15,
+      value: statsData.nuevos,
       icon: <Users size={24} />,
       trend: "up",
-      trendValue: "Este mes",
+      trendValue: timePeriod === "week" ? "Esta semana" : timePeriod === "month" ? "Este mes" : "Este año",
     },
     {
       label: "Tasa de Ocupación",
-      value: "82%",
+      value: statsData.ocupacion,
       icon: <TrendingUp size={24} />,
       trend: "up",
       trendValue: "+5%",
     },
   ]
 
-  const monthlyRevenueData = [
-    { month: "Ene", revenue: 2400, reservas: 24 },
-    { month: "Feb", revenue: 2210, reservas: 22 },
-    { month: "Mar", revenue: 2290, reservas: 25 },
-    { month: "Abr", revenue: 2000, reservas: 20 },
-    { month: "May", revenue: 2181, reservas: 23 },
-    { month: "Jun", revenue: 2500, reservas: 28 },
-    { month: "Jul", revenue: 2100, reservas: 21 },
-  ]
+  // Data de gráficos que cambia según el período
+  const getRevenueData = () => {
+    if (timePeriod === "week") {
+      return [
+        { period: "Lun", revenue: 350, reservas: 4 },
+        { period: "Mar", revenue: 420, reservas: 5 },
+        { period: "Mié", revenue: 380, reservas: 4 },
+        { period: "Jue", revenue: 450, reservas: 6 },
+        { period: "Vie", revenue: 520, reservas: 7 },
+        { period: "Sáb", revenue: 580, reservas: 8 },
+        { period: "Dom", revenue: 450, reservas: 6 },
+      ]
+    } else if (timePeriod === "month") {
+      return [
+        { period: "Sem 1", revenue: 2400, reservas: 24 },
+        { period: "Sem 2", revenue: 2210, reservas: 22 },
+        { period: "Sem 3", revenue: 2290, reservas: 25 },
+        { period: "Sem 4", revenue: 2000, reservas: 20 },
+      ]
+    } else {
+      return [
+        { period: "2022", revenue: 142000, reservas: 1654 },
+        { period: "2023", revenue: 148500, reservas: 1723 },
+        { period: "2024", revenue: 152200, reservas: 1789 },
+        { period: "2025", revenue: 156300, reservas: 1842 },
+      ]
+    }
+  }
+
+  const revenueData = getRevenueData()
 
   const courtPerformanceData = [
     { cancha: "Cancha 1", reservas: 45, ingresos: 2250 },
@@ -95,64 +154,28 @@ export default function EstadisticasPage() {
     { hora: "22:00", reservas: 6 },
   ]
 
-  const historyData = [
-    {
-      id: "1",
-      date: "2024-11-14",
-      court: "Cancha 1",
-      player: "Juan García",
-      time: "14:00 - 15:00",
-      players: 10,
-      revenue: 50,
-      status: "completed",
-    },
-    {
-      id: "2",
-      date: "2024-11-14",
-      court: "Cancha 2",
-      player: "María López",
-      time: "16:30 - 17:30",
-      players: 8,
-      revenue: 60,
-      status: "completed",
-    },
-    {
-      id: "3",
-      date: "2024-11-13",
-      court: "Cancha 3",
-      player: "Carlos Rodríguez",
-      time: "18:00 - 19:00",
-      players: 12,
-      revenue: 50,
-      status: "completed",
-    },
-    {
-      id: "4",
-      date: "2024-11-13",
-      court: "Cancha 1",
-      player: "Ana Martínez",
-      time: "20:00 - 21:00",
-      players: 10,
-      revenue: 50,
-      status: "completed",
-    },
-    {
-      id: "5",
-      date: "2024-11-12",
-      court: "Cancha 2",
-      player: "Pedro Sánchez",
-      time: "14:00 - 15:00",
-      players: 9,
-      revenue: 60,
-      status: "completed",
-    },
-  ]
-
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <Header title="Estadísticas" />
 
       <main className="px-4 py-6 max-w-6xl mx-auto">
+        {/* Time Period Filter */}
+        <section className="mb-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">Período de Tiempo</h2>
+            <Select value={timePeriod} onValueChange={(value: "week" | "month" | "year") => setTimePeriod(value)}>
+              <SelectTrigger className="w-[180px] bg-white border-primary/20">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">Esta Semana</SelectItem>
+                <SelectItem value="month">Este Mes</SelectItem>
+                <SelectItem value="year">Este Año</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </section>
+
         {/* Summary Stats */}
         <section className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -178,24 +201,33 @@ export default function EstadisticasPage() {
         </section>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-primary/10">
+          <TabsList className="grid w-full grid-cols-2 bg-primary/10">
             <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-white">
               Resumen
             </TabsTrigger>
             <TabsTrigger value="performance" className="data-[state=active]:bg-primary data-[state=active]:text-white">
               Desempeño
             </TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-              Historial
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6 space-y-6">
-            {/* Monthly Revenue */}
+            {/* Revenue Chart */}
             <Card className="border-primary/20">
               <CardHeader>
-                <CardTitle>Ingresos Mensuales</CardTitle>
-                <CardDescription>Ingresos y reservas por mes</CardDescription>
+                <CardTitle>
+                  {timePeriod === "week"
+                    ? "Ingresos Semanales"
+                    : timePeriod === "month"
+                      ? "Ingresos Mensuales"
+                      : "Ingresos Anuales"}
+                </CardTitle>
+                <CardDescription>
+                  {timePeriod === "week"
+                    ? "Ingresos y reservas por día"
+                    : timePeriod === "month"
+                      ? "Ingresos y reservas por semana"
+                      : "Ingresos y reservas por año"}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer
@@ -212,9 +244,9 @@ export default function EstadisticasPage() {
                   className="h-[300px]"
                 >
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={monthlyRevenueData}>
+                    <LineChart data={revenueData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
+                      <XAxis dataKey="period" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Legend />
@@ -349,41 +381,6 @@ export default function EstadisticasPage() {
                       <div className="text-right">
                         <p className="font-bold text-primary">${court.ingresos}</p>
                         <p className="text-sm text-muted">Ingresos</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="history" className="mt-6">
-            {/* Reservation History */}
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle>Historial de Reservas</CardTitle>
-                <CardDescription>Últimas reservas completadas</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {historyData.map((reservation) => (
-                    <div
-                      key={reservation.id}
-                      className="flex items-center justify-between p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <p className="font-medium text-foreground">{reservation.court}</p>
-                          <Badge className="bg-green-100 text-green-800">Completada</Badge>
-                        </div>
-                        <p className="text-sm text-muted">{reservation.player}</p>
-                        <p className="text-xs text-muted mt-1">
-                          {new Date(reservation.date).toLocaleDateString("es-ES")} • {reservation.time}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-primary">${reservation.revenue}</p>
-                        <p className="text-sm text-muted">{reservation.players} jugadores</p>
                       </div>
                     </div>
                   ))}

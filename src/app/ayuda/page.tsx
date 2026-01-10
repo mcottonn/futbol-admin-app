@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { Header } from '../../components/layout/header';
+import { BottomNav } from '../../components/layout/bottom-nav';
 import FaqList from '../../components/ayuda/FaqList';
 import ContactCard from '../../components/ayuda/ContactCard';
 import type { Faq } from '../../components/ayuda/FaqItem';
@@ -38,22 +40,26 @@ export default function AyudaPage() {
   const collapseAll = () => setExpandedIds(new Set());
 
   return (
-    <main className="p-4 md:p-6">
-      <div className="max-w-4xl mx-auto space-y-4">
-        <h1 className="text-2xl font-bold">Ayuda y soporte</h1>
+    <div className="min-h-screen bg-gray-50 pb-24">
+      <Header title="Ayuda" />
 
-        <FaqList
-          faqs={faqs}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          expandedIds={expandedIds}
-          toggleExpand={toggleExpand}
-          expandAll={expandAll}
-          collapseAll={collapseAll}
-        />
+      <main className="p-4 md:p-6">
+        <div className="max-w-4xl mx-auto space-y-4">
+          <FaqList
+            faqs={faqs}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            expandedIds={expandedIds}
+            toggleExpand={toggleExpand}
+            expandAll={expandAll}
+            collapseAll={collapseAll}
+          />
 
-        <ContactCard />
-      </div>
-    </main>
+          <ContactCard />
+        </div>
+      </main>
+
+      <BottomNav />
+    </div>
   );
 }

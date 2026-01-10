@@ -29,7 +29,6 @@ interface Complex {
   email: string
   services: string[]
   image: string
-  defaultTolerance: number // Tolerancia global en minutos
 }
 
 export default function ComplejosPage() {
@@ -44,7 +43,6 @@ export default function ComplejosPage() {
       email: "info@complejogarcía.com",
       services: ["Estacionamiento", "Vestuarios", "Duchas", "Cafetería"],
       image: "/sports-complex.jpg",
-      defaultTolerance: 15, // 15 minutos por defecto
     },
   ])
 
@@ -58,7 +56,6 @@ export default function ComplejosPage() {
     email: "",
     services: [] as string[],
     image: "",
-    defaultTolerance: 15,
   })
 
   const availableServices = [
@@ -99,7 +96,6 @@ export default function ComplejosPage() {
       email: "",
       services: [],
       image: "",
-      defaultTolerance: 15,
     })
   }
 
@@ -114,7 +110,6 @@ export default function ComplejosPage() {
       email: "",
       services: [],
       image: "",
-      defaultTolerance: 15,
     })
   }
 
@@ -259,21 +254,6 @@ export default function ComplejosPage() {
                     <img src={formData.image} alt="Preview" className="w-full h-40 object-cover rounded-lg" />
                   </div>
                 )}
-              </div>
-
-              <div>
-                <Label htmlFor="defaultTolerance">Tolerancia Global (minutos)</Label>
-                <Input
-                  id="defaultTolerance"
-                  type="number"
-                  value={formData.defaultTolerance || 15}
-                  onChange={(e) => setFormData({ ...formData, defaultTolerance: Number(e.target.value) })}
-                  min="0"
-                  className="mt-2"
-                />
-                <p className="text-xs text-slate-600 mt-1">
-                  Tiempo de espera por defecto antes de marcar una reserva como "No asistió". Este valor se aplica a todas las canchas del complejo, a menos que se configure una tolerancia específica por cancha.
-                </p>
               </div>
 
               <div>

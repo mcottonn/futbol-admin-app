@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "../components/layout/header"
 import { BottomNav } from "../components/layout/bottom-nav"
 import { Card, CardContent } from "../components/ui/card"
@@ -9,6 +10,10 @@ import Link from "next/link"
 import { ChevronDown, Calendar, Users, DollarSign, TrendingUp } from "lucide-react"
 
 export default function Home() {
+  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const adminName = "Juan"
 
   const allReservations = [
@@ -123,8 +128,6 @@ export default function Home() {
     },
   ]
 
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-
   const todayReservations = allReservations.filter((r) => r.date === "Hoy")
   const summaryReservations = todayReservations.slice(0, 2)
 
@@ -156,6 +159,28 @@ export default function Home() {
       default:
         return status
     }
+  }
+
+  useEffect(() => {
+    // Verificar autenticación
+    const auth = localStorage.getItem("isAuthenticated")
+    if (auth === "true") {
+      setIsAuthenticated(true)
+      setIsLoading(false)
+    } else {
+      router.push("/auth/login")
+    }
+  }, [router])
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

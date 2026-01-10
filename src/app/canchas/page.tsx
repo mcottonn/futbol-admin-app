@@ -37,7 +37,6 @@ interface Court {
   price: number
   status: "available" | "maintenance" | "reserved"
   timeSlots: { days: string[], from: string, to: string }[]
-  toleranceMinutes?: number // Tolerancia específica de la cancha (pisa la del complejo)
 }
 
 interface Complex {
@@ -474,24 +473,6 @@ export default function CanchasPage() {
                   <SelectItem value="reserved">Reservada</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="tolerance">Tolerancia de espera (minutos)</Label>
-              <Input
-                id="tolerance"
-                type="number"
-                value={formData.toleranceMinutes ?? ""}
-                onChange={(e) => setFormData({ ...formData, toleranceMinutes: e.target.value ? Number(e.target.value) : undefined })}
-                placeholder="Dejar vacío para usar tolerancia del complejo"
-                min="0"
-                className="mt-2"
-              />
-              <p className="text-xs text-slate-600 mt-1">
-                Configuración específica para esta cancha. Si se deja vacío, se usará la tolerancia del complejo.
-                <br />
-                <strong>Ejemplo:</strong> Fútbol 11 profesional = 0 min, Fútbol 5 = 15 min
-              </p>
             </div>
 
             <div>

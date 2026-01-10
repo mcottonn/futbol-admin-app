@@ -43,12 +43,8 @@ interface Reservation {
   playerCount: number
   players: string[]
   totalPrice: number
-  status: "pending" | "confirmed" | "waiting" | "delayed" | "completed" | "cancelled" | "no-show"
+  status: "pending" | "confirmed" | "completed" | "cancelled" | "no-show"
   checkInTime?: string
-  toleranceMinutes?: number // Tolerancia específica de esta reserva (pisa la de cancha/complejo)
-  extendedTolerance?: number // Extensión manual de tolerancia ("Botón de Piedad")
-  waitingStartTime?: string // Hora de inicio del periodo de espera
-  delayedSince?: string // Hora cuando entró en estado demorado
 }
 
 export default function ReservasPage() {
@@ -63,8 +59,8 @@ export default function ReservasPage() {
       courtName: "Cancha 1",
       courtSize: "F5",
       date: today,
-      startTime: "14:00",
-      endTime: "15:00",
+      startTime: "11:52",
+      endTime: "12:52",
       playerName: "Juan García",
       playerPhone: "+34 612 345 678",
       playerEmail: "juan@email.com",
@@ -145,8 +141,7 @@ export default function ReservasPage() {
   // Diálogos
   const [contactDialog, setContactDialog] = useState<Reservation | null>(null)
   const [checkInDialog, setCheckInDialog] = useState<Reservation | null>(null)
-  const [extendToleranceDialog, setExtendToleranceDialog] = useState<Reservation | null>(null)
-  const [extendedMinutes, setExtendedMinutes] = useState(10)
+  const [noShowDialog, setNoShowDialog] = useState<string | null>(null)
   const [editDialog, setEditDialog] = useState<Reservation | null>(null)
   const [cancelDialog, setCancelDialog] = useState<string | null>(null)
   const [blockCourtDialog, setBlockCourtDialog] = useState<{ courtId: string, courtName: string } | null>(null)
@@ -212,10 +207,6 @@ export default function ReservasPage() {
         return "bg-yellow-100 text-yellow-800"
       case "confirmed":
         return "bg-blue-100 text-blue-800"
-      case "waiting":
-        return "bg-cyan-100 text-cyan-800"
-      case "delayed":
-        return "bg-orange-100 text-orange-800 animate-pulse"
       case "completed":
         return "bg-emerald-100 text-emerald-800"
       case "cancelled":
@@ -233,10 +224,6 @@ export default function ReservasPage() {
         return "Pendiente"
       case "confirmed":
         return "Confirmada"
-      case "waiting":
-        return "En Espera"
-      case "delayed":
-        return "⚠️ Demorado"
       case "completed":
         return "Completada"
       case "cancelled":
@@ -258,38 +245,18 @@ export default function ReservasPage() {
     setCheckInDialog(null)
   }
 
-  const handleExtendTolerance = (reservationId: string, additionalMinutes: number) => {
-    setReservations(reservations.map(r => 
-      r.id === reservationId 
-        ? { ...r, extendedTolerance: (r.extendedTolerance || 0) + additionalMinutes } 
-        : r
-    ))
-    setExtendToleranceDialog(null)
-  }
-
-  // Calcular tolerancia efectiva de una reserva
-  const getEffectiveTolerance = (reservation: Reservation, courts: any[], complexes: any[]) => {
-    // 1. Si tiene tolerancia específica en la reserva, usar esa
-    if (reservation.toleranceMinutes !== undefined) {
-      return reservation.toleranceMinutes + (reservation.extendedTolerance || 0)
-    }
-    
-    // 2. Si la cancha tiene tolerancia configurada, usar esa
-    const court = courts.find(c => c.id === reservation.courtId)
-    if (court?.toleranceMinutes !== undefined) {
-      return court.toleranceMinutes + (reservation.extendedTolerance || 0)
-    }
-    
-    // 3. Usar la tolerancia global del complejo
-    const complex = complexes.find(c => c.id === reservation.complexId)
-    return (complex?.defaultTolerance || 15) + (reservation.extendedTolerance || 0)
-  }
-
   const handleCancelReservation = (reservationId: string) => {
     setReservations(reservations.map(r => 
       r.id === reservationId ? { ...r, status: "cancelled" } : r
     ))
     setCancelDialog(null)
+  }
+
+  const handleNoShow = (reservationId: string) => {
+    setReservations(reservations.map(r => 
+      r.id === reservationId ? { ...r, status: "no-show" } : r
+    ))
+    setNoShowDialog(null)
   }
 
   const handleBlockCourt = (courtId: string) => {
@@ -370,34 +337,6 @@ export default function ReservasPage() {
           )}
         </div>
 
-        {/* Alertas de estado de espera/demora */}
-        {reservation.status === "waiting" && (
-          <div className="mt-3 bg-cyan-50 border border-cyan-200 rounded p-3">
-            <p className="text-sm font-medium text-cyan-800">
-              ⏱️ En espera - Hora de inicio: {reservation.startTime}
-            </p>
-            <p className="text-xs text-cyan-700 mt-1">
-              Tolerancia: {reservation.toleranceMinutes || reservation.extendedTolerance || 15} minutos
-            </p>
-          </div>
-        )}
-
-        {reservation.status === "delayed" && (
-          <div className="mt-3 bg-orange-50 border border-orange-300 rounded p-3 animate-pulse">
-            <p className="text-sm font-medium text-orange-800">
-              ⚠️ DEMORADO - Tiempo de tolerancia cumplido
-            </p>
-            <p className="text-xs text-orange-700 mt-1">
-              Se necesita check-in o se cancelará automáticamente
-            </p>
-            {reservation.delayedSince && (
-              <p className="text-xs text-orange-600 mt-1">
-                Demorado desde: {reservation.delayedSince}
-              </p>
-            )}
-          </div>
-        )}
-
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2 mt-4">
           <Button
@@ -417,7 +356,7 @@ export default function ReservasPage() {
             Más detalles
           </Button>
 
-          {canModify && reservation.status !== "cancelled" && (
+          {canModify && reservation.status !== "cancelled" && reservation.status !== "no-show" && (
             <>
               <Button
                 size="sm"
@@ -438,7 +377,7 @@ export default function ReservasPage() {
                 Cancelar
               </Button>
 
-              {(reservation.status === "pending" || reservation.status === "confirmed" || reservation.status === "waiting" || reservation.status === "delayed") && (
+              {(reservation.status === "pending" || reservation.status === "confirmed") && (
                 <>
                   <Button
                     size="sm"
@@ -450,15 +389,14 @@ export default function ReservasPage() {
                     {isCheckInTime ? "Check-in" : "Check-in (esperar hora)"}
                   </Button>
 
-                  {/* Botón de Piedad - Extender Tolerancia */}
-                  {(reservation.status === "waiting" || reservation.status === "delayed") && (
+                  {isCheckInTime && (
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100"
-                      onClick={() => setExtendToleranceDialog(reservation)}
+                      variant="link"
+                      className="text-slate-600 hover:text-slate-800 "
+                      onClick={() => setNoShowDialog(reservation.id)}
                     >
-                      ⏰ Extender Tolerancia
+                      ¿El jugador no se presentó?
                     </Button>
                   )}
                 </>
@@ -589,8 +527,6 @@ export default function ReservasPage() {
                       <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="pending">Pendiente</SelectItem>
                       <SelectItem value="confirmed">Confirmada</SelectItem>
-                      <SelectItem value="waiting">En Espera</SelectItem>
-                      <SelectItem value="delayed">Demorado</SelectItem>
                       <SelectItem value="completed">Completada</SelectItem>
                       <SelectItem value="cancelled">Cancelada</SelectItem>
                       <SelectItem value="no-show">No asistió</SelectItem>
@@ -734,71 +670,26 @@ export default function ReservasPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog de Extender Tolerancia - "Botón de Piedad" */}
-      <Dialog open={!!extendToleranceDialog} onOpenChange={() => setExtendToleranceDialog(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>🙏 Extender Tolerancia</DialogTitle>
-            <DialogDescription>Otorga tiempo adicional antes de marcar como "No asistió"</DialogDescription>
-          </DialogHeader>
-          {extendToleranceDialog && (
-            <div className="space-y-4">
-              <div>
-                <Label>Reserva</Label>
-                <p className="font-medium">{extendToleranceDialog.complexName} - {extendToleranceDialog.courtName}</p>
-                <p className="text-sm text-slate-600">
-                  {extendToleranceDialog.startTime} - {extendToleranceDialog.endTime} • {extendToleranceDialog.playerName}
-                </p>
-              </div>
-
-              {extendToleranceDialog.extendedTolerance && extendToleranceDialog.extendedTolerance > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                  <p className="text-sm text-blue-800">
-                    Ya se extendió la tolerancia: +{extendToleranceDialog.extendedTolerance} minutos
-                  </p>
-                </div>
-              )}
-
-              <div>
-                <Label>Minutos adicionales</Label>
-                <Input
-                  type="number"
-                  value={extendedMinutes}
-                  onChange={(e) => setExtendedMinutes(Number(e.target.value))}
-                  min="1"
-                  max="60"
-                  className="mt-2"
-                />
-                <p className="text-xs text-slate-600 mt-1">
-                  Útil cuando el cliente avisa de un retraso justificado (tráfico, emergencia, etc.)
-                </p>
-              </div>
-
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                <p className="text-sm text-yellow-800">
-                  <strong>Caso de uso:</strong> Cliente habitual llama avisando que llegará tarde por un imprevisto.
-                </p>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => handleExtendTolerance(extendToleranceDialog.id, extendedMinutes)}
-                  className="flex-1 bg-yellow-600 hover:bg-yellow-700"
-                >
-                  Extender {extendedMinutes} min
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setExtendToleranceDialog(null)}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Dialog de No-Show */}
+      <AlertDialog open={!!noShowDialog} onOpenChange={() => setNoShowDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿El jugador no se presentó?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Puedes mantener la reserva esperando que llegue, o marcarla como "No asistió" para liberar la cancha. ¡CUIDADO! Esta acción no se puede deshacer
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-2">
+            <AlertDialogCancel className="flex-1">Mantener reserva</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => noShowDialog && handleNoShow(noShowDialog)}
+              className="flex-1 bg-gray-600 hover:bg-gray-700"
+            >
+              Cancelar la reserva
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog de Edición */}
       <Dialog open={!!editDialog} onOpenChange={() => setEditDialog(null)}>
@@ -846,20 +737,6 @@ export default function ReservasPage() {
                   onChange={(e) => setEditDialog({ ...editDialog, totalPrice: Number(e.target.value) })}
                   className="mt-2"
                 />
-              </div>
-              <div>
-                <Label>Tolerancia específica (minutos)</Label>
-                <Input
-                  type="number"
-                  value={editDialog.toleranceMinutes ?? ""}
-                  onChange={(e) => setEditDialog({ ...editDialog, toleranceMinutes: e.target.value ? Number(e.target.value) : undefined })}
-                  placeholder="Dejar vacío para usar tolerancia de cancha/complejo"
-                  min="0"
-                  className="mt-2"
-                />
-                <p className="text-xs text-slate-600 mt-1">
-                  Tolerancia personalizada para esta reserva específica. Si se configura, tiene prioridad sobre la tolerancia de la cancha y del complejo.
-                </p>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -983,50 +860,6 @@ export default function ReservasPage() {
                   </p>
                 </div>
               )}
-
-              {/* Información del sistema de tolerancia */}
-              <div className="border-t pt-4">
-                <Label className="text-base">Sistema de Tolerancia</Label>
-                <div className="mt-2 space-y-2 text-sm">
-                  <div className="bg-slate-50 border border-slate-200 rounded p-3">
-                    <p className="font-medium text-slate-800">📋 Configuración de Tolerancia (Jerarquía):</p>
-                    <ol className="mt-2 space-y-1 text-slate-700 ml-4 list-decimal">
-                      <li><strong>Nivel 1 - Complejo:</strong> Tolerancia global de {detailsDialog.complexName} (por defecto 15 min)</li>
-                      <li><strong>Nivel 2 - Cancha:</strong> Si la cancha tiene configuración específica, pisa la del complejo</li>
-                      <li><strong>Nivel 3 - Reserva:</strong> Extensiones manuales otorgadas por el encargado</li>
-                    </ol>
-                  </div>
-
-                  <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                    <p className="font-medium text-blue-800">⏰ Estados del Flujo de Tolerancia:</p>
-                    <ul className="mt-2 space-y-1 text-blue-700 ml-4 list-disc">
-                      <li><strong>Pendiente/Confirmada:</strong> Antes de la hora de inicio</li>
-                      <li><strong>En Espera:</strong> Desde la hora de inicio hasta cumplir la tolerancia</li>
-                      <li><strong>Demorado:</strong> Tolerancia cumplida, alerta visual al encargado</li>
-                      <li><strong>No-Show:</strong> Tras demora adicional sin check-in, cancha liberada</li>
-                    </ul>
-                  </div>
-
-                  {detailsDialog.toleranceMinutes !== undefined && (
-                    <div className="bg-purple-50 border border-purple-200 rounded p-3">
-                      <p className="text-sm text-purple-800">
-                        🎯 Esta reserva tiene tolerancia específica: <strong>{detailsDialog.toleranceMinutes} minutos</strong>
-                      </p>
-                    </div>
-                  )}
-
-                  {detailsDialog.extendedTolerance && detailsDialog.extendedTolerance > 0 && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                      <p className="text-sm text-yellow-800">
-                        🙏 Extensión manual otorgada: <strong>+{detailsDialog.extendedTolerance} minutos</strong>
-                      </p>
-                      <p className="text-xs text-yellow-700 mt-1">
-                        (Cliente avisó de un retraso justificado)
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           )}
         </DialogContent>
